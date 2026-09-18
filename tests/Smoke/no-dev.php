@@ -7,15 +7,19 @@ use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Kernel;
 
 require __DIR__.'/../../vendor/autoload.php';
 
 $kernel = new class extends Kernel {
+    private readonly string $cacheId;
+
     public function __construct()
     {
         parent::__construct('test', false);
+        $this->cacheId = bin2hex(random_bytes(8));
     }
 
     public function registerBundles(): iterable
@@ -46,12 +50,12 @@ $kernel = new class extends Kernel {
 
     public function getCacheDir(): string
     {
-        return sys_get_temp_dir().'/scalar-symfony-no-dev/cache';
+        return sys_get_temp_dir().'/scalar-symfony-no-dev-'.$this->cacheId.'/cache';
     }
 
     public function getLogDir(): string
     {
-        return sys_get_temp_dir().'/scalar-symfony-no-dev/log';
+        return sys_get_temp_dir().'/scalar-symfony-no-dev-'.$this->cacheId.'/log';
     }
 };
 
@@ -66,5 +70,6 @@ if (!str_contains((string) $response->getContent(), 'Scalar.createApiReference')
 }
 
 $kernel->shutdown();
+(new Filesystem())->remove(dirname($kernel->getCacheDir()));
 
 fwrite(STDOUT, "No-dev smoke test passed.\n");
