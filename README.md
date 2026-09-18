@@ -1,5 +1,10 @@
 # Scalar for Symfony
 
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/scalar/symfony.svg?style=flat)](https://packagist.org/packages/scalar/symfony)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/scalar/symfony/ci.yml?branch=main&label=tests&style=flat)](https://github.com/scalar/symfony/actions/workflows/ci.yml?query=branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/scalar/symfony/ci.yml?branch=main&label=code%20style&style=flat)](https://github.com/scalar/symfony/actions/workflows/ci.yml?query=branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/scalar/symfony.svg?style=flat)](https://packagist.org/packages/scalar/symfony)
+
 Render an interactive Scalar API reference from your OpenAPI document.
 
 Bring a document from a file, URL, inline JSON or YAML, NelmioApiDocBundle, API Platform, or another generator. This package renders the reference; it does not generate or proxy your specification.
