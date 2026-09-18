@@ -61,8 +61,8 @@ jobs:
           key: composer-${{ runner.os }}-${{ matrix.php }}-${{ matrix.symfony }}-${{ matrix.deps || 'latest' }}-${{ hashFiles('composer.json', 'composer.lock') }}
 
       - name: Validate composer.json
-        # setup-php writes the Actions GITHUB_TOKEN (ghs_*) into composer's
-        # auth.json; composer 2.8 rejects that token format ('invalid
+        # setup-php writes the Actions GITHUB_TOKEN into composer's
+        # auth.json; composer 2.8 rejects newer token formats ('invalid
         # characters') on ANY config/validate path that touches it — even
         # `composer config --unset` crashes. Remove the credential file
         # directly (ephemeral runner, no other creds to lose) and keep the
@@ -72,6 +72,7 @@ jobs:
         run: |
           rm -f "${COMPOSER_HOME:-$HOME/.composer}/auth.json"
           rm -f "$HOME/.config/composer/auth.json"
+          php -r 'if ($directory = getenv("APPDATA")) { $file = $directory."/Composer/auth.json"; if (is_file($file)) { unlink($file); } }'
           composer validate --strict --no-check-publish
 
       - name: Constrain Symfony runtime packages
