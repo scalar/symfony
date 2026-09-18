@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FrolovGuru\ScalarSymfony\Tests\Functional;
+namespace Scalar\Symfony\Tests\Functional;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use FrolovGuru\ScalarSymfony\ScalarSymfonyBundle;
+use Scalar\Symfony\ScalarSymfonyBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;

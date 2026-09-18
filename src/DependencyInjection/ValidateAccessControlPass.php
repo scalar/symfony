@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FrolovGuru\ScalarSymfony\DependencyInjection;
+namespace Scalar\Symfony\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace FrolovGuru\ScalarSymfony;
+namespace Scalar\Symfony;
 
-use FrolovGuru\ScalarSymfony\DependencyInjection\ValidateAccessControlPass;
+use Scalar\Symfony\DependencyInjection\ValidateAccessControlPass;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;

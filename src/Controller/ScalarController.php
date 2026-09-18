@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FrolovGuru\ScalarSymfony\Controller;
+namespace Scalar\Symfony\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
