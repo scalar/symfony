@@ -398,4 +398,18 @@ final class ScalarControllerTest extends TestCase
         self::assertStringNotContainsString($payload, $html);
         self::assertSame($payload, $this->extractConfiguration($html)['content']);
     }
+
+    public function testDocumentUrlMustBeAString(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $client = $this->createClient(['url' => 123]);
+        $client->request('GET', '/scalar');
+    }
+
+    public function testSourcesMustBeAList(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $client = $this->createClient(['sources' => ['named' => ['url' => '/api.yaml']]]);
+        $client->request('GET', '/scalar');
+    }
 }
