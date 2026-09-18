@@ -198,7 +198,7 @@ Node and Playwright are development-only dependencies and are excluded from Comp
 
 ## Migrating from alex-frolov/scalar-symfony
 
-The official Composer package is `scalar/symfony`. The first official release is prepared on the `0.2.x` line. Use a published release once it is available.
+The official Composer package is `scalar/symfony`, starting with version `0.2.0`.
 
 Update your application's Composer requirements by removing `alex-frolov/scalar-symfony` and adding `scalar/symfony`, then run Composer update. Do not install both packages together: they use the same bundle/configuration names.
 
