@@ -8,6 +8,7 @@
     <testsuites>
         <testsuite name="Functional">
             <directory>tests/Functional</directory>
+            <directory>tests/Unit</directory>
         </testsuite>
     </testsuites>
     <source>

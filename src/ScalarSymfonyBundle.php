@@ -33,7 +33,10 @@ final class ScalarSymfonyBundle extends AbstractBundle
 
     /**
      * @param array{
-     *     url: string,
+     *     url: string|null,
+     *     content: string|null,
+     *     file: string|null,
+     *     sources: list<array{url?: string|null, content?: string|null, file?: string|null, title?: string|null, slug?: string|null, default?: bool}>,
      *     cdn: string,
      *     path: string,
      *     configuration: array<string, mixed>,

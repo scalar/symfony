@@ -316,4 +316,86 @@ final class ScalarControllerTest extends TestCase
         self::assertSame('classic', $configuration['layout']);
         self::assertSame(['title' => 'API Reference', 'description' => 'Docs'], $configuration['metaData']);
     }
+
+    public function testInlineContentDoesNotRequireAUrl(): void
+    {
+        $client = $this->createClient(['url' => null, 'content' => '{"openapi":"3.1.0"}']);
+        $client->request('GET', '/scalar');
+        $configuration = $this->extractConfiguration($client->getResponse()->getContent());
+        self::assertSame('{"openapi":"3.1.0"}', $configuration['content']);
+        self::assertArrayNotHasKey('url', $configuration);
+    }
+
+    public function testFileOverridesContentAndUrl(): void
+    {
+        $client = $this->createClient(['file' => __DIR__.'/../Fixtures/openapi.json', 'content' => 'ignored']);
+        $client->request('GET', '/scalar');
+        $configuration = $this->extractConfiguration($client->getResponse()->getContent());
+        self::assertStringContainsString('Fixture API', $configuration['content']);
+        self::assertArrayNotHasKey('url', $configuration);
+        self::assertArrayNotHasKey('file', $configuration);
+    }
+
+    public function testSourcesOverrideSingleDocumentAndPassThroughInputs(): void
+    {
+        $client = $this->createClient([
+            'url' => null,
+            'file' => '/missing-but-ignored.yaml',
+            'sources' => [
+                ['title' => 'v1', 'slug' => 'v1', 'url' => '/v1.yaml'],
+                ['title' => 'v2', 'content' => '{}', 'url' => '/ignored.yaml', 'default' => true],
+            ],
+            'configuration' => ['url' => '/stale.yaml', 'content' => 'stale', 'file' => 'stale', 'sources' => []],
+        ]);
+        $client->request('GET', '/scalar');
+        $configuration = $this->extractConfiguration($client->getResponse()->getContent());
+        self::assertSame([
+            ['title' => 'v1', 'slug' => 'v1', 'url' => '/v1.yaml'],
+            ['title' => 'v2', 'content' => '{}', 'default' => true],
+        ], $configuration['sources']);
+        foreach (['url', 'content', 'file'] as $key) {
+            self::assertArrayNotHasKey($key, $configuration);
+        }
+    }
+
+    public function testEmptySourcesFallBackAndIgnorePassThroughInputs(): void
+    {
+        $client = $this->createClient([
+            'sources' => [],
+            'configuration' => ['url' => '/stale.yaml', 'content' => 'stale', 'file' => 'stale', 'sources' => [['url' => '/stale.yaml']]],
+        ]);
+        $client->request('GET', '/scalar');
+        $configuration = $this->extractConfiguration($client->getResponse()->getContent());
+        self::assertSame('/openapi.yaml', $configuration['url']);
+        foreach (['sources', 'content', 'file'] as $key) {
+            self::assertArrayNotHasKey($key, $configuration);
+        }
+    }
+
+    public function testMissingDocumentAllowsBootButFailsClearlyOnRequest(): void
+    {
+        $client = $this->createClient(['url' => null]);
+        $client->getKernel()->boot();
+        $client->catchExceptions(false);
+        $this->expectException(\Scalar\Symfony\Exception\MissingOpenApiDocument::class);
+        $client->request('GET', '/scalar');
+    }
+
+    public function testInvalidUtf8FailsJsonEncoding(): void
+    {
+        $client = $this->createClient(['content' => hex2bin('b131')]);
+        $client->catchExceptions(false);
+        $this->expectException(\JsonException::class);
+        $client->request('GET', '/scalar');
+    }
+
+    public function testInlineDocumentCannotCloseTheScriptTag(): void
+    {
+        $payload = '</script><script>alert(1)</script>';
+        $client = $this->createClient(['url' => null, 'content' => $payload]);
+        $client->request('GET', '/scalar');
+        $html = $client->getResponse()->getContent();
+        self::assertStringNotContainsString($payload, $html);
+        self::assertSame($payload, $this->extractConfiguration($html)['content']);
+    }
 }

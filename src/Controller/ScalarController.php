@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Scalar\Symfony\Controller;
 
+use Scalar\Symfony\Document;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
@@ -15,7 +16,10 @@ final class ScalarController
 
     /**
      * @param array{
-     *     url: string,
+     *     url: string|null,
+     *     content: string|null,
+     *     file: string|null,
+     *     sources: list<array{url?: string|null, content?: string|null, file?: string|null, title?: string|null, slug?: string|null, default?: bool}>,
      *     cdn: string,
      *     path: string,
      *     configuration: array<string, mixed>,
@@ -70,7 +74,17 @@ final class ScalarController
             $this->config['configuration'],
             $this->config['scalar_options'],
         );
-        $configuration['url'] = $this->config['url'];
+        unset($configuration['url'], $configuration['content'], $configuration['file'], $configuration['sources']);
+
+        if ([] !== $this->config['sources']) {
+            $configuration['sources'] = array_map(Document::resolve(...), $this->config['sources']);
+        } else {
+            $configuration = array_replace($configuration, Document::resolve([
+                'url' => $this->config['url'],
+                'content' => $this->config['content'],
+                'file' => $this->config['file'],
+            ]));
+        }
 
         return $configuration;
     }
