@@ -2,6 +2,8 @@
 
 ## Unreleased (0.2.x)
 
+- Add a default Symfony theme based on the official black and white identity, with light and dark modes.
+
 - Adopt the official `scalar/symfony` Composer name and `Scalar\Symfony` PHP namespace. Preserve the existing bundle, route, and configuration names.
 - Accept all serializable Scalar options under `configuration`; retain `scalar_options` as a deprecated compatibility alias.
 - Add inline content, local files, and multiple documents with explicit precedence and clear missing-document errors.

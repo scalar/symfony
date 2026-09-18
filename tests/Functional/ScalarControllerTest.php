@@ -79,7 +79,8 @@ final class ScalarControllerTest extends TestCase
         $configuration = $this->extractConfiguration($html);
         self::assertSame('/openapi.yaml', $configuration['url']);
         self::assertSame('symfony', $configuration['_integration']);
-        self::assertSame('default', $configuration['theme']);
+        self::assertSame('none', $configuration['theme']);
+        self::assertStringContainsString('data-scalar-theme="symfony"', $html);
         self::assertSame(['title' => 'API Reference'], $configuration['metaData']);
     }
 
@@ -411,5 +412,26 @@ final class ScalarControllerTest extends TestCase
         $this->expectException(InvalidConfigurationException::class);
         $client = $this->createClient(['sources' => ['named' => ['url' => '/api.yaml']]]);
         $client->request('GET', '/scalar');
+    }
+
+    public function testBuiltInThemeDoesNotIncludeSymfonyStyles(): void
+    {
+        $client = $this->createClient(['configuration' => ['theme' => 'moon']]);
+        $client->request('GET', '/scalar');
+        $html = $client->getResponse()->getContent();
+        self::assertSame('moon', $this->extractConfiguration($html)['theme']);
+        self::assertStringNotContainsString('data-scalar-theme="symfony"', $html);
+    }
+
+    public function testLegacyOptionsCanSelectTheSymfonyTheme(): void
+    {
+        $client = $this->createClient([
+            'configuration' => ['theme' => 'moon'],
+            'scalar_options' => ['theme' => 'symfony'],
+        ]);
+        $client->request('GET', '/scalar');
+        $html = $client->getResponse()->getContent();
+        self::assertSame('none', $this->extractConfiguration($html)['theme']);
+        self::assertStringContainsString('data-scalar-theme="symfony"', $html);
     }
 }

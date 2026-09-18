@@ -36,7 +36,7 @@ $config = match ($_GET['mode'] ?? 'url') {
     ]],
     default => ['url' => '/openapi.json'],
 };
-$kernel = new TestKernel($config + ['configuration' => ['withDefaultFonts' => false, 'telemetry' => false]]);
+$kernel = new TestKernel($config + ['configuration' => ['withDefaultFonts' => false, 'telemetry' => false, 'darkMode' => 'dark' === ($_GET['appearance'] ?? 'light'), 'theme' => $_GET['theme'] ?? 'symfony']]);
 $request = Request::createFromGlobals();
 $response = $kernel->handle($request);
 $response->send();

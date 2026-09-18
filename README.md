@@ -99,7 +99,7 @@ scalar_symfony:
     path: /scalar
     cdn: 'https://cdn.jsdelivr.net/npm/@scalar/api-reference'
     configuration:
-        theme: default
+        theme: symfony
         metaData:
             title: API Reference
             description: Public API documentation
@@ -110,13 +110,21 @@ scalar_symfony:
 
 All serializable [Scalar configuration options](https://github.com/scalar/scalar/blob/main/documentation/configuration.md) go under `configuration`, preserving camelCase names. PHP closures and JavaScript callbacks cannot be represented as JSON. Document keys (`url`, `content`, `file`, `sources`) in this map are ignored in favor of the top-level document settings.
 
-Defaults are `theme: default`, `_integration: symfony`, and `metaData.title: API Reference`. Other Scalar options use the client defaults. The package does not set `proxyUrl`; configure it explicitly if your application needs a request proxy. There is no automatic development-environment authorization bypass.
+Defaults are `theme: symfony`, `_integration: symfony`, and `metaData.title: API Reference`. Other Scalar options use the client defaults. The package does not set `proxyUrl`; configure it explicitly if your application needs a request proxy. There is no automatic development-environment authorization bypass.
 
 The old `scalar_options` map is a deprecated compatibility alias. For this release it is recursively merged over `configuration`, retaining its previous precedence. Move all values into `configuration` for new code.
 
 The default CDN URL loads the latest Scalar client, matching Laravel. Override `cdn` to choose a specific version or a self-hosted bundle. Laravel retains its existing framework theme, application title, and published UI/proxy defaults; those are intentional framework differences.
 
 Use Symfony route import options to set a host or additional route requirements. Use firewalls and voters for application-specific access policies.
+
+## Symfony theme
+
+The default `symfony` theme uses the black and white palette of the [official Symfony identity](https://symfony.com/logo). It includes light and dark appearances, contrasting navigation and buttons, and neutral grays for secondary text and borders. Scalar's semantic colors for HTTP methods remain unchanged.
+
+Choose another Scalar theme with `configuration.theme` (for example, `default` or `moon`). The Symfony styles are only included when `symfony` is selected. The bundle sends `theme: none` to the browser for this custom theme, following the same approach as the Laravel integration.
+
+Use `configuration.darkMode` to choose the initial appearance. The normal Scalar light/dark toggle remains available.
 
 ## Access control
 
@@ -154,7 +162,7 @@ scalar_symfony:
     cdn: /scalar/standalone.js
 ```
 
-Override `templates/bundles/ScalarSymfonyBundle/reference.html.twig` to customize the page. The template receives `cdn`, `configuration`, and script-safe `configurationJson`.
+Override `templates/bundles/ScalarSymfonyBundle/reference.html.twig` to customize the page. The template receives `cdn`, `configuration`, script-safe `configurationJson`, and the `symfonyTheme` flag. Theme styles live in `@ScalarSymfony/theme.css.twig`, which can also be overridden.
 
 For Subresource Integrity, compute a hash of the exact standalone asset and add `integrity` and `crossorigin="anonymous"` to its script tag. Do not reuse a hash from another version or the CDN's generated package-root response.
 
@@ -218,6 +226,8 @@ Move `scalar_options` entries into `configuration`. The alias still works and ta
 Move document inputs out of either options map into top-level `url`, `content`, `file`, or `sources`. A URL is no longer mandatory if another input is selected. Conflicting document keys in options maps are now ignored. Files and inline documents use `file > content > url`; a non-empty source list overrides all single-document settings.
 
 The default CDN changes from the versioned Scalar 1.65.1 URL to the unversioned `https://cdn.jsdelivr.net/npm/@scalar/api-reference` URL, matching Laravel. It receives client updates independently of Composer releases. An explicit existing `cdn` setting is preserved. If you use SRI, choose an immutable versioned asset and its matching hash.
+
+The default theme is now `symfony`. Set `configuration.theme: default` to retain the standard Scalar appearance.
 
 The public/attribute access modes are unchanged. The package remains public by default. An application with no document configured can now compile its container, but requesting the reference raises `Scalar\Symfony\Exception\MissingOpenApiDocument`.
 

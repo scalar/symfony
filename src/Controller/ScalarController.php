@@ -38,9 +38,14 @@ final class ScalarController
     {
         $this->authorize();
         $configuration = $this->buildConfiguration();
+        $symfonyTheme = 'symfony' === ($configuration['theme'] ?? null);
+        if ($symfonyTheme) {
+            $configuration['theme'] = 'none';
+        }
 
         return new Response($this->twig->render(self::TEMPLATE, [
             'cdn' => $this->config['cdn'],
+            'symfonyTheme' => $symfonyTheme,
             'configuration' => $configuration,
             'configurationJson' => json_encode($configuration, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_THROW_ON_ERROR),
         ]));
@@ -70,7 +75,7 @@ final class ScalarController
     {
         /** @var array<string, mixed> $configuration */
         $configuration = array_replace_recursive(
-            ['theme' => 'default', '_integration' => 'symfony', 'metaData' => ['title' => 'API Reference']],
+            ['theme' => 'symfony', '_integration' => 'symfony', 'metaData' => ['title' => 'API Reference']],
             $this->config['configuration'],
             $this->config['scalar_options'],
         );

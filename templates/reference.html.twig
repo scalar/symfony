@@ -4,6 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ configuration.metaData.title|default('API Reference') }}</title>
+    {% if symfonyTheme %}
+        <style data-scalar-theme="symfony">
+            {% include '@ScalarSymfony/theme.css.twig' %}
+        </style>
+    {% endif %}
 </head>
 <body>
     <div id="scalar-api-reference"></div>
