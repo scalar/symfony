@@ -2,7 +2,7 @@
 
 ## Before the first official release
 
-- Review the local commits and migration guide.
+- Review the local commits and the [migration guidance in the README](../README.md#migrating-from-alex-frolovscalar-symfony).
 - Confirm Scalar repository maintainers and the contributor's maintenance role.
 - Confirm ownership of the `scalar/symfony` Packagist entry and its GitHub webhook.
 - Confirm the community package's migration/deprecation notice with its maintainer.
