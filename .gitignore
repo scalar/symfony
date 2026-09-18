@@ -3,3 +3,6 @@ composer.lock
 .phpunit.cache/
 .php-cs-fixer.cache
 /var/
+/node_modules/
+/test-results/
+/playwright-report/

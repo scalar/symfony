@@ -138,3 +138,17 @@ jobs:
       - run: bash tests/Smoke/install.sh
         env:
           SYMFONY_SKELETON_VERSION: ${{ matrix.symfony }}
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f
+        with:
+          php-version: '8.4'
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
