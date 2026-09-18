@@ -16,7 +16,7 @@ defaults:
 
 jobs:
   tests:
-    name: PHP ${{ matrix.php }} / Symfony ${{ matrix.symfony }}${{ matrix.deps == 'lowest' && ' / prefer-lowest' || '' }}
+    name: PHP ${{ matrix.php }} / Symfony ${{ matrix.symfony }}${{ matrix.deps == 'lowest' && ' / prefer-lowest' || '' }} / ${{ matrix.os || 'ubuntu-latest' }}
     runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     timeout-minutes: 15
     strategy:
