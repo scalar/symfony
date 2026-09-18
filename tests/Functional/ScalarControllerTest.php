@@ -7,6 +7,7 @@ namespace Scalar\Symfony\Tests\Functional;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Security\Core\User\InMemoryUser;
 
 final class ScalarControllerTest extends TestCase
@@ -15,7 +16,11 @@ final class ScalarControllerTest extends TestCase
 
     protected function tearDown(): void
     {
-        $this->client?->getKernel()?->shutdown();
+        if (null !== $this->client) {
+            $kernel = $this->client->getKernel();
+            $kernel->shutdown();
+            (new Filesystem())->remove($kernel->getCacheDir());
+        }
         $this->client = null;
 
         // FrameworkBundle::boot() registers Symfony's ErrorHandler (one exception
@@ -68,7 +73,7 @@ final class ScalarControllerTest extends TestCase
 
         $html = $response->getContent();
         self::assertStringContainsString('<div id="scalar-api-reference"></div>', $html);
-        self::assertStringContainsString('https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.65.1', $html);
+        self::assertStringContainsString('https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.69.0/dist/browser/standalone.js', $html);
         self::assertStringContainsString('Scalar.createApiReference(\'#scalar-api-reference\'', $html);
 
         $configuration = $this->extractConfiguration($html);
@@ -142,7 +147,7 @@ final class ScalarControllerTest extends TestCase
         $html = $client->getResponse()->getContent();
         // The JSON blob inside <script> must not contain a raw closing script tag.
         self::assertStringNotContainsString('</script><script>alert(1)</script>', $html);
-        self::assertStringContainsString('\u003C/script\u003E', $html);
+        self::assertStringContainsString('\u003C\\/script\u003E', $html);
 
         $configuration = $this->extractConfiguration($html);
         self::assertSame('</script><script>alert(1)</script>', $configuration['metaData']['title']);
@@ -297,5 +302,18 @@ final class ScalarControllerTest extends TestCase
         $client->request('GET', '/scalar');
 
         self::assertSame(200, $client->getResponse()->getStatusCode());
+    }
+
+    public function testArbitraryConfigurationAndLegacyPrecedence(): void
+    {
+        $client = $this->createClient([
+            'configuration' => ['darkMode' => true, 'layout' => 'modern', 'metaData' => ['description' => 'Docs']],
+            'scalar_options' => ['layout' => 'classic'],
+        ]);
+        $client->request('GET', '/scalar');
+        $configuration = $this->extractConfiguration($client->getResponse()->getContent());
+        self::assertTrue($configuration['darkMode']);
+        self::assertSame('classic', $configuration['layout']);
+        self::assertSame(['title' => 'API Reference', 'description' => 'Docs'], $configuration['metaData']);
     }
 }

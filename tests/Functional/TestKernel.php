@@ -27,10 +27,8 @@ final class TestKernel extends Kernel
     ) {
         parent::__construct('test', false);
 
-        // The compiled container is cached per kernel class + environment. Tests
-        // use different bundle configurations, so give each configuration its own
-        // cache key to avoid stale containers.
-        $this->cacheId = hash('sha1', serialize([$this->scalarConfig, $this->authorizationCheckerAllows, $this->withRealSecurity]));
+        // Isolate every test from previous runs and changed package defaults.
+        $this->cacheId = bin2hex(random_bytes(8));
     }
 
     public function registerBundles(): iterable
