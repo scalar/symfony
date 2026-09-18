@@ -41,7 +41,7 @@ return static function (DefinitionConfigurator $definition): void {
             ->end()
             ->scalarNode('cdn')->validate()->ifTrue($notString)->thenInvalid('Expected a string.')->end()
                 ->info('URL of the Scalar API Reference standalone bundle.')
-                ->defaultValue('https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.69.0/dist/browser/standalone.js')
+                ->defaultValue('https://cdn.jsdelivr.net/npm/@scalar/api-reference')
                 ->cannotBeEmpty()
             ->end()
             ->scalarNode('path')->validate()->ifTrue($notString)->thenInvalid('Expected a string.')->end()

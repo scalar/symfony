@@ -97,7 +97,7 @@ A non-empty `sources` list overrides the single-document settings. Each source a
 ```yaml
 scalar_symfony:
     path: /scalar
-    cdn: 'https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.69.0/dist/browser/standalone.js'
+    cdn: 'https://cdn.jsdelivr.net/npm/@scalar/api-reference'
     configuration:
         theme: default
         metaData:
@@ -114,7 +114,7 @@ Defaults are `theme: default`, `_integration: symfony`, and `metaData.title: API
 
 The old `scalar_options` map is a deprecated compatibility alias. For this release it is recursively merged over `configuration`, retaining its previous precedence. Move all values into `configuration` for new code.
 
-The default client version is pinned to 1.69.0, matching the Laravel alignment release. Package updates can change the tested pin. Override `cdn` to use another version or a self-hosted bundle. Laravel retains its existing framework theme, application title, and published UI/proxy defaults; those are intentional framework differences.
+The default CDN URL loads the latest Scalar client, matching Laravel. Override `cdn` to choose a specific version or a self-hosted bundle. Laravel retains its existing framework theme, application title, and published UI/proxy defaults; those are intentional framework differences.
 
 Use Symfony route import options to set a host or additional route requirements. Use firewalls and voters for application-specific access policies.
 
@@ -140,12 +140,12 @@ This protects the HTML page. A specification fetched from a URL needs its own ac
 
 ## Self-hosting and template overrides
 
-To self-host the pinned standalone client:
+To self-host the current standalone client:
 
 ```bash
 mkdir -p public/scalar
 curl -fLo public/scalar/standalone.js \
-  https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.69.0/dist/browser/standalone.js
+  https://cdn.jsdelivr.net/npm/@scalar/api-reference/dist/browser/standalone.js
 ```
 
 ```yaml
@@ -173,7 +173,7 @@ bash tests/Smoke/install.sh
 
 The installation check creates and removes a temporary Symfony Flex application and runs Composer auto-scripts, production cache warmup, routing, and rendering without dev dependencies. Set `SYMFONY_SKELETON_VERSION='^6.4'` to test the older supported branch.
 
-Browser checks load the pinned CDN client and exercise URL, file, inline, and multiple-document rendering:
+Browser checks load the default CDN client and exercise URL, file, inline, and multiple-document rendering:
 
 ```bash
 npm ci

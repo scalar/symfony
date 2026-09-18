@@ -16,15 +16,11 @@ Repository permissions, Packagist setup, publishing, and official website update
 
 ## Client updates
 
-Both PHP integrations should use the same tested Scalar client version. When updating it:
+Both PHP integrations use the unversioned `https://cdn.jsdelivr.net/npm/@scalar/api-reference` URL. Client updates do not require Composer releases.
 
-1. Change the explicit CDN version in Symfony's definition and tests, and Laravel's config and fallback.
-2. Update README examples and migration/release notes where needed.
-3. Run browser checks against the new CDN asset, including document switching and Test Request.
-4. Test custom themes and self-hosting. Recompute any documented SRI values.
-5. Keep application-provided CDN overrides working.
+Run browser checks against the default URL before releasing, including document switching and Test Request. Keep application-provided CDN overrides working. Users can choose a versioned asset or self-host the client when they need a fixed version, including for SRI.
 
-Dependabot maintains Composer, npm test dependencies, and GitHub Actions. The CDN URL is a PHP configuration value and needs the coordinated update above.
+Dependabot maintains Composer, npm test dependencies, and GitHub Actions.
 
 ## Deferred features
 

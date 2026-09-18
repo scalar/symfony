@@ -73,7 +73,7 @@ final class ScalarControllerTest extends TestCase
 
         $html = $response->getContent();
         self::assertStringContainsString('<div id="scalar-api-reference"></div>', $html);
-        self::assertStringContainsString('https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.69.0/dist/browser/standalone.js', $html);
+        self::assertStringContainsString('https://cdn.jsdelivr.net/npm/@scalar/api-reference', $html);
         self::assertStringContainsString('Scalar.createApiReference(\'#scalar-api-reference\'', $html);
 
         $configuration = $this->extractConfiguration($html);

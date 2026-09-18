@@ -32,6 +32,6 @@ Move `scalar_options` entries into `configuration`. The alias still works and ta
 
 Move document inputs out of either options map into top-level `url`, `content`, `file`, or `sources`. A URL is no longer mandatory if another input is selected. Conflicting document keys in options maps are now ignored. Files and inline documents use `file > content > url`; a non-empty source list overrides all single-document settings.
 
-The default CDN changes from Scalar 1.65.1's package-root URL to the explicit standalone asset for 1.69.0. Review custom CSS and template overrides with the new client. An explicit existing `cdn` setting is preserved. Recompute SRI if you use it.
+The default CDN changes from the versioned Scalar 1.65.1 URL to the unversioned `https://cdn.jsdelivr.net/npm/@scalar/api-reference` URL, matching Laravel. It receives client updates independently of Composer releases. An explicit existing `cdn` setting is preserved. If you use SRI, choose an immutable versioned asset and its matching hash.
 
 The public/attribute access modes are unchanged. The package remains public by default. An application with no document configured can now compile its container, but requesting the reference raises `Scalar\Symfony\Exception\MissingOpenApiDocument`.

@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 for (const mode of ['url', 'file', 'content', 'sources']) {
-  test(`renders the ${mode} document with the pinned Scalar client`, async ({ page }) => {
+  test(`renders the ${mode} document with the default Scalar client`, async ({ page }) => {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(`/scalar?mode=${mode}`);
