@@ -1,231 +1,195 @@
-# Scalar Symfony Bundle
+# Scalar for Symfony
 
-Render modern [Scalar](https://scalar.com) API References in Symfony from **any** OpenAPI document.
+Render an interactive Scalar API reference from your OpenAPI document.
 
-Scalar is an open-source, beautiful and interactive API reference renderer — a modern
-replacement for the classic Swagger UI. This bundle does one thing: serve the Scalar
-reference page from your Symfony app in a single route, pointing at your OpenAPI spec.
-
-No OpenAPI generation included (and none required) — bring your spec from any source:
-a static `openapi.yaml`, `swagger-php`, NelmioApiDocBundle, API Platform, or an
-external URL.
-
-## Why this bundle?
-
-| Scenario | NelmioApiDocBundle 5 (+Scalar UI) | **scalar-symfony** |
-|---|---|---|
-| I already use Nelmio | ✅ built-in Scalar renderer | ✅ compatible (just point `url` at your nelmio spec route) |
-| I use swagger-php / static spec / API Platform | ❌ would need Nelmio as a dependency | ✅ standalone, no Nelmio required |
-| Lightweight docs page, one route | — | ✅ one bundle, one route |
-| Symfony 6.4+ | needs upgrade to v5 | ✅ works on 6.4 / 7.2+ / 8.x |
-
-## Live demo (dogfooding)
-
-The bundle powers the API reference of the
-[Tender Platform](https://github.com/alex-frolov/tender) (Symfony 8.1,
-highload auction platform) — a real OpenAPI document served through a single
-route, no other documentation tooling involved:
-
-![Tender Platform API reference rendered with Scalar](docs/assets/tender-scalar-demo.png)
+Bring a document from a file, URL, inline JSON or YAML, NelmioApiDocBundle, API Platform, or another generator. This package renders the reference; it does not generate or proxy your specification.
 
 ## Requirements
 
-- PHP >= 8.2
-- Symfony 6.4 / 7.2+ / 8.x (framework-bundle + twig-bundle)
-- An OpenAPI document served at a public URL (e.g. `/openapi.yaml`)
+- PHP 8.2 or later within PHP 8.x
+- Symfony 6.4, 7.2 or later within 7.x, or 8.x
+- Symfony FrameworkBundle and TwigBundle (installed as dependencies)
+
+The selected Symfony version may require a newer PHP version. Symfony 8 requires PHP 8.4 or later.
 
 ## Installation
 
 ```bash
-composer require alex-frolov/scalar-symfony
+composer require scalar/symfony
 ```
 
-## Configuration
+Symfony Flex enables the bundle automatically. Without Flex, add these bundles to `config/bundles.php` if they are not already enabled:
+
+```php
+return [
+    Symfony\Bundle\FrameworkBundle\FrameworkBundle::class => ['all' => true],
+    Symfony\Bundle\TwigBundle\TwigBundle::class => ['all' => true],
+    Scalar\Symfony\ScalarSymfonyBundle::class => ['all' => true],
+];
+```
 
 Create `config/packages/scalar_symfony.yaml`:
 
 ```yaml
 scalar_symfony:
-    # Public URL of your OpenAPI document (required)
     url: '/openapi.yaml'
-
-    # Route path (default: /scalar)
-    path: '/scalar'
-
-    # CDN of the Scalar standalone bundle (default: jsdelivr)
-    cdn: 'https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.65.1'
-
-    # Well-known options (theme, metadata, integration identifier)
-    configuration:
-        theme: 'default'          # default | alternate | none ...
-        metaData:
-            title: 'API Reference'
-            description: 'Public API documentation'
-
-    # Any other Scalar option, passed through verbatim
-    scalar_options:
-        darkMode: false
-        layout: 'modern'
-
-    # Access control
-    access_control:
-        mode: public              # 'public' | 'attribute'
-        attribute: ~              # e.g. ROLE_ADMIN (required when mode: attribute)
 ```
 
-Import the bundle routes (add to `config/routes.yaml`):
+Create `config/routes/scalar_symfony.yaml`:
 
 ```yaml
 scalar_symfony:
     resource: '@ScalarSymfonyBundle/config/routes.php'
 ```
 
-That's it. Your API reference is now served at `/scalar` (route name
-`scalar_symfony_reference`).
+Visit `/scalar`. The route is named `scalar_symfony_reference`. The application can boot before a document is configured; requesting the page without one throws `MissingOpenApiDocument` with a clear message.
+
+## Document inputs
+
+Use a URL fetched by the browser:
+
+```yaml
+scalar_symfony:
+    url: '/openapi.yaml'
+```
+
+Or embed a local file, without exposing a separate public document URL:
+
+```yaml
+scalar_symfony:
+    file: '%kernel.project_dir%/docs/openapi.yaml'
+```
+
+Use `%kernel.project_dir%` to avoid relying on the PHP process's working directory. Files are read when the page is requested. A missing, unreadable, or empty file raises an error instead of falling back silently.
+
+Or provide inline JSON or YAML:
+
+```yaml
+scalar_symfony:
+    content: |
+        openapi: 3.1.0
+        info:
+            title: My API
+            version: 1.0.0
+        paths: {}
+```
+
+For a single document, `file` takes precedence over `content`, which takes precedence over `url`. Empty strings are treated as unset. These inputs belong at the top level, not inside `configuration`.
+
+## Multiple documents
+
+```yaml
+scalar_symfony:
+    sources:
+        - title: API v1
+          slug: v1
+          url: /openapi/v1.yaml
+        - title: API v2
+          slug: v2
+          file: '%kernel.project_dir%/docs/v2.yaml'
+          default: true
+```
+
+A non-empty `sources` list overrides the single-document settings. Each source accepts `title`, `slug`, `default`, and the same `file`, `content`, and `url` inputs. Only the selected input is sent to Scalar; server file paths are never included in the client configuration. An empty list falls back to the single-document settings.
+
+## Configuration
+
+```yaml
+scalar_symfony:
+    path: /scalar
+    cdn: 'https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.69.0/dist/browser/standalone.js'
+    configuration:
+        theme: default
+        metaData:
+            title: API Reference
+            description: Public API documentation
+        darkMode: false
+        layout: modern
+        hideClientButton: true
+```
+
+All serializable [Scalar configuration options](https://github.com/scalar/scalar/blob/main/documentation/configuration.md) go under `configuration`, preserving camelCase names. PHP closures and JavaScript callbacks cannot be represented as JSON. Document keys (`url`, `content`, `file`, `sources`) in this map are ignored in favor of the top-level document settings.
+
+Defaults are `theme: default`, `_integration: symfony`, and `metaData.title: API Reference`. Other Scalar options use the client defaults. The package does not set `proxyUrl`; configure it explicitly if your application needs a request proxy. There is no automatic development-environment authorization bypass.
+
+The old `scalar_options` map is a deprecated compatibility alias. For this release it is recursively merged over `configuration`, retaining its previous precedence. Move all values into `configuration` for new code.
+
+The default client version is pinned to 1.69.0, matching the Laravel alignment release. Package updates can change the tested pin. Override `cdn` to use another version or a self-hosted bundle. Laravel retains its existing framework theme, application title, and published UI/proxy defaults; those are intentional framework differences.
+
+Use Symfony route import options to set a host or additional route requirements. Use firewalls and voters for application-specific access policies.
 
 ## Access control
 
-- **`public`** (default) — the reference is available to everyone (recommended for
-  public API docs; matches the default Laravel integration behaviour).
-- **`attribute`** — the page requires a security attribute:
-
-```yaml
-scalar_symfony:
-    url: '/openapi.yaml'
-    access_control:
-        mode: attribute
-        attribute: ROLE_ADMIN
-```
-
-The attribute mode requires [symfony/security-core](https://symfony.com/doc/current/security.html)
-and an enabled `security.authorization_checker` service (i.e. Symfony Security configured).
-Requests without the attribute get a `403`.
-
-Misconfiguration is detected at **container compile time**: enabling `attribute` without
-Symfony Security makes `bin/console cache:clear` (and any container build) fail with a clear
-message instead of surfacing an HTTP 500 on the first request.
-
-### Known limitation: only the page is protected, not the spec
-
-The `attribute` mode protects **only the HTML reference page** (`/scalar`). The
-OpenAPI document itself (the `url` you configured, e.g. `/openapi.yaml`) is fetched
-**client-side by the Scalar bundle in the user's browser** — it is never served
-through this bundle and the bundle does **not** proxy it.
-
-Practical consequences:
-
-- If the document is served at a public URL (the default assumption), it stays
-  publicly downloadable even when the reference page is behind `attribute`.
-- If the document is protected by its own firewall rules, an authorised user's
-  browser may fail to load it (403/CORS), breaking the reference page.
-
-Treat `attribute` as protection of the *page*, not of the *spec*. If the spec must
-stay confidential, protect the document with the same rule (or use a protected
-proxy endpoint — planned).
-
-## How it works
-
-The bundle serves a small HTML page that loads the Scalar standalone bundle from the
-CDN and calls `Scalar.createApiReference('#scalar-api-reference', { ... })` with your
-configuration and the `url` of the OpenAPI document. The document itself is loaded
-client-side by Scalar — the bundle never parses or proxies it.
-
-## Hardening: SRI, CSP and self-hosting
-
-The reference page loads the Scalar standalone bundle from a CDN and runs an
-inline `Scalar.createApiReference(...)` call. If the CDN is compromised (or the
-`cdn` value is replaced), arbitrary JavaScript executes with your origin's
-privileges. This section documents what you can do today. Built-in `sri` /
-`nonce` configuration is a planned improvement (see the project TODO).
-
-### Self-hosting (recommended)
-
-Download the standalone bundle once and serve it from your own origin — no
-third-party request at page load, no CDN trust at all:
+The reference page is public by default. To require a security attribute, install and enable Symfony Security:
 
 ```bash
-# Pin the version and download the original package file (not the jsDelivr
-# minifier output — its hash is not stable, see SRI below):
-curl -fLo public/scalar/api-reference.standalone.js \
-  https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.65.1/dist/browser/standalone.js
-shasum -a 384 public/scalar/api-reference.standalone.js
+composer require symfony/security-bundle
 ```
 
 ```yaml
-# config/packages/scalar_symfony.yaml
 scalar_symfony:
-    url: '/openapi.yaml'
-    cdn: '/scalar/api-reference.standalone.js'
+    file: '%kernel.project_dir%/docs/openapi.yaml'
+    access_control:
+        mode: attribute
+        attribute: ROLE_API_DOCS
 ```
 
-The file is served by your own web server with no extra dependency.
+The attribute is checked through `security.authorization_checker` in every environment. Denied requests receive HTTP 403. Missing attributes or a missing security checker are detected during container compilation. The `public` mode works without Security installed.
 
-### SRI (Subresource Integrity)
+This protects the HTML page. A specification fetched from a URL needs its own access rules and browser-compatible authentication/CORS settings. With `file` or `content`, the document is embedded in the protected page and remains available to authorized viewers.
 
-When keeping a third-party CDN, pin the expected content hash so a
-compromised or swapped file is rejected by the browser.
+## Self-hosting and template overrides
 
-- The *root* jsDelivr URL (`…/@scalar/api-reference@1.65.1`) is **minified on
-  the fly** by jsDelivr — the response carries the warning *"Do NOT use SRI
-  with dynamically generated files!"*. Its hash can change without a package
-  release, so it is not SRI-safe.
-- The explicit file URL (`…/dist/browser/standalone.js`) is served as-is from
-  the immutable npm tarball. Its SHA-384 for 1.65.1 is:
+To self-host the pinned standalone client:
 
-  `sha384-G6dkutu2k5IYVyNESLoFIpgaHx38IJTZ/HhrwN0fecTle9te75y8Kru3rJEJ0ZJV`
-
-The bundle does not render `integrity` yet. To apply SRI today, override the
-template (`templates/bundles/ScalarSymfonyBundle/reference.html.twig`) and add
-the attributes to the CDN script tag:
-
-```html
-<script src="{{ cdn }}"
-        integrity="sha384-G6dkutu2k5IYVyNESLoFIpgaHx38IJTZ/HhrwN0fecTle9te75y8Kru3rJEJ0ZJV"
-        crossorigin="anonymous"></script>
+```bash
+mkdir -p public/scalar
+curl -fLo public/scalar/standalone.js \
+  https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.69.0/dist/browser/standalone.js
 ```
 
-`crossorigin="anonymous"` is required for cross-origin SRI (CORS-enabled
-request so the integrity check works).
+```yaml
+scalar_symfony:
+    url: /openapi.yaml
+    cdn: /scalar/standalone.js
+```
 
-### CSP and nonce
+Override `templates/bundles/ScalarSymfonyBundle/reference.html.twig` to customize the page. The template receives `cdn`, `configuration`, and script-safe `configurationJson`.
 
-If your app sends a `Content-Security-Policy` with a restrictive `script-src`,
-the inline `Scalar.createApiReference(...)` script must be allowlisted —
-prefer a per-request nonce over `'unsafe-inline'`. A nonce-aware config option
-is a planned improvement; until then, override the template and add
-`nonce="{{ csp_nonce }}"` to both `<script>` tags.
+For Subresource Integrity, compute a hash of the exact standalone asset and add `integrity` and `crossorigin="anonymous"` to its script tag. Do not reuse a hash from another version or the CDN's generated package-root response.
+
+For a CSP nonce, generate it per request in your application, make it available to Twig, and add the same nonce to both script tags and your response's CSP header. Do not store a fixed nonce in bundle configuration. The bundle does not manage CSP headers, nonces, or SRI automatically.
 
 ## Development
 
 ```bash
 composer install
-composer test        # PHPUnit functional tests
-composer analyse     # PHPStan level max
-composer fix         # PHP-CS-Fixer
+composer test
+composer analyse
+composer lint          # PHP-CS-Fixer, read-only
+composer format        # Apply formatting; composer fix also works
+bash tests/Smoke/install.sh
 ```
 
-For the reproducible Docker validation pipeline from the repository root:
+The installation check creates and removes a temporary Symfony Flex application and runs Composer auto-scripts, production cache warmup, routing, and rendering without dev dependencies. Set `SYMFONY_SKELETON_VERSION='^6.4'` to test the older supported branch.
+
+Browser checks load the pinned CDN client and exercise URL, file, inline, and multiple-document rendering:
 
 ```bash
-./validate.sh
+npm ci
+npx playwright install chromium
+npm run test:browser
 ```
 
-The pipeline runs the regular checks in a pinned Composer image and then tests
-PHP 8.2 with Symfony 6.4 and lowest dependencies in a disposable copy. The
-images can be overridden when validating a security-patched base image:
+Node and Playwright are development-only dependencies and are excluded from Composer distribution archives. See [the release checklist](docs/releasing.md) for validation and publication steps.
 
-```bash
-COMPOSER_IMAGE=composer:2.8.12 \
-PHP82_BASE_IMAGE=php:8.2-cli-bookworm \
-./validate.sh
-```
+## Migration and changes
 
-## License
+- [Migrate from the community package](docs/migration.md)
+- [Changelog](CHANGELOG.md)
 
-MIT — see [LICENSE](LICENSE).
+## Credits and license
 
-## Credits
+Created by [Aleksander Frolov](https://github.com/alex-frolov), inspired by [Scalar for Laravel](https://github.com/scalar/laravel). Maintained as part of the [Scalar](https://github.com/scalar) integrations.
 
-Heavily inspired by [scalar/laravel](https://github.com/scalar/laravel) (Scalar OpenAPI
-References in Laravel) and the [Scalar](https://github.com/scalar/scalar) project
-(open-source API platform, MIT).
+MIT. See [LICENSE](LICENSE).
