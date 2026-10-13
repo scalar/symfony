@@ -19,10 +19,6 @@ jobs:
     name: PHP ${{ matrix.php }} / Symfony ${{ matrix.symfony }}${{ matrix.deps == 'lowest' && ' / prefer-lowest' || '' }} / ${{ matrix.os || 'ubuntu-latest' }}
     runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     timeout-minutes: 15
-    # Exercise old releases in compatibility tests, including no-dev installs.
-    # Preserve the compatibility coverage used before upgrading Composer.
-    env:
-      COMPOSER_POLICY_ADVISORIES_BLOCK: '0'
     strategy:
       fail-fast: false
       matrix:
