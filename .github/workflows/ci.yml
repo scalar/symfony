@@ -29,7 +29,7 @@ jobs:
           - php: '8.2'
             symfony: '6.4.*'
           - php: '8.2'
-            symfony: '7.2.*'
+            symfony: '7.4.*'
           - php: '8.3'
             symfony: '7.4.*'
           - php: '8.4'
