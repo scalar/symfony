@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     timeout-minutes: 15
     # Exercise old releases in compatibility tests, including no-dev installs.
-    # The separate audit workflow keeps advisory blocking enabled.
+    # Preserve the compatibility coverage used before upgrading Composer.
     env:
       COMPOSER_POLICY_ADVISORIES_BLOCK: '0'
     strategy:
