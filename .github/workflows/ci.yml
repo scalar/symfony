@@ -29,7 +29,7 @@ jobs:
           - php: '8.2'
             symfony: '6.4.*'
           - php: '8.2'
-            symfony: '7.2.*'
+            symfony: '7.4.*'
           - php: '8.3'
             symfony: '7.4.*'
           - php: '8.4'
@@ -42,38 +42,26 @@ jobs:
             symfony: 'latest'
             os: windows-latest
     steps:
-      # v4.2.2
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Setup PHP
-        # v2.35.5
-        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f
+        # v2.40.0
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
         with:
           php-version: ${{ matrix.php }}
           coverage: none
-          tools: composer:2.8.12
+          tools: composer:2.10.3
 
       - name: Cache Composer packages
-        # v4.2.4
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        # v6.1.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: ~/.composer/cache/files
           key: composer-${{ runner.os }}-${{ matrix.php }}-${{ matrix.symfony }}-${{ matrix.deps || 'latest' }}-${{ hashFiles('composer.json', 'composer.lock') }}
 
       - name: Validate composer.json
-        # setup-php writes the Actions GITHUB_TOKEN into composer's
-        # auth.json; composer 2.8 rejects newer token formats ('invalid
-        # characters') on ANY config/validate path that touches it — even
-        # `composer config --unset` crashes. Remove the credential file
-        # directly (ephemeral runner, no other creds to lose) and keep the
-        # check purely static (--no-check-publish).
-        env:
-          GITHUB_TOKEN: ''
-        run: |
-          rm -f "${COMPOSER_HOME:-$HOME/.composer}/auth.json"
-          rm -f "$HOME/.config/composer/auth.json"
-          php -r 'if ($directory = getenv("APPDATA")) { $file = $directory."/Composer/auth.json"; if (is_file($file)) { unlink($file); } }'
-          composer validate --strict --no-check-publish
+        run: composer validate --strict --no-check-publish
 
       - name: Constrain Symfony runtime packages
         if: matrix.symfony != 'latest'
@@ -131,8 +119,8 @@ jobs:
           - php: '8.4'
             symfony: '^8.0'
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
         with:
           php-version: ${{ matrix.php }}
           coverage: none
@@ -144,8 +132,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
         with:
           php-version: '8.4'
           coverage: none
