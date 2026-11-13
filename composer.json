@@ -1,22 +1,19 @@
 {
     "name": "scalar/symfony",
-    "description": "Render modern Scalar API References in Symfony from any OpenAPI document",
+    "description": "Render your OpenAPI-based API reference",
     "type": "symfony-bundle",
     "license": "MIT",
     "keywords": [
-        "symfony",
-        "bundle",
         "scalar",
+        "symfony",
         "openapi",
-        "swagger",
-        "api-reference",
-        "api-docs"
+        "swagger"
     ],
     "authors": [
         {
-            "name": "Aleksander Frolov",
-            "email": "aleksander@frolov.guru",
-            "homepage": "https://frolov.guru"
+            "name": "Hans Pagel",
+            "email": "mail@hanspagel.com",
+            "role": "Developer"
         }
     ],
     "require": {
