@@ -12,8 +12,14 @@
     "authors": [
         {
             "name": "Hans Pagel",
-            "email": "mail@hanspagel.com",
+            "email": "support@scalar.com",
+            "homepage": "https://scalar.com",
             "role": "Developer"
+        },
+        {
+            "name": "Aleksander Frolov",
+            "email": "aleksander@frolov.guru",
+            "homepage": "https://frolov.guru"
         }
     ],
     "require": {
