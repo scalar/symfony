@@ -25,6 +25,9 @@ Mutation testing uses [Infection 0.35.12](https://github.com/infection/infection
 
 Published releases copy their notes into `CHANGELOG.md` using the release tag as the version and commit the update to `main`.
 
+GitHub Actions dependencies are recorded in `.github/workflows/actions.lock`. After adding or changing an action, run `gh actions-lock` and commit the workflow changes with the generated lockfile. Install the generator with `gh extension install github/gh-actions-lock --pin v0.4.1`; CI runs `gh actions-lock --verify` alongside actionlint. Docker action images retain their digest pins.
+
+
 ## Credits and license
 
 Created by [Aleksander Frolov](https://github.com/alex-frolov), inspired by [Scalar for Laravel](https://github.com/scalar/laravel). Maintained as part of the [Scalar](https://github.com/scalar) integrations.
