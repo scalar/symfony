@@ -15,6 +15,16 @@ Render an interactive Scalar API reference from your OpenAPI document.
 
 See [CHANGELOG.md](CHANGELOG.md) for a list of changes.
 
+## Development checks
+
+Run `composer test`, `composer analyse`, and `composer lint` before opening a pull request. Use `composer format` to apply PHP-CS-Fixer rules.
+
+CI checks every pull request and pushes to `main`, cancelling superseded runs. It also validates GitHub Actions workflows with actionlint. PHP pushes trigger automatic formatting commits using the same PHP-CS-Fixer configuration.
+
+Mutation testing uses [Infection 0.35.12](https://github.com/infection/infection/releases/tag/0.35.12), installed separately from Composer dependencies, with Xdebug or PCOV enabled. Run `composer test-mutation` with `infection` on your PATH. The check includes uncovered source code and requires at least 97% overall and covered mutation scores; timeouts count as escaped mutations. Reports are written to `var/infection/`.
+
+Published releases copy their notes into `CHANGELOG.md` using the release tag as the version and commit the update to `main`.
+
 ## Credits and license
 
 Created by [Aleksander Frolov](https://github.com/alex-frolov), inspired by [Scalar for Laravel](https://github.com/scalar/laravel). Maintained as part of the [Scalar](https://github.com/scalar) integrations.

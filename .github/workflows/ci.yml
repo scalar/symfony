@@ -2,7 +2,13 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   SYMFONY_DEPRECATIONS_HELPER: 'max[direct]=0'

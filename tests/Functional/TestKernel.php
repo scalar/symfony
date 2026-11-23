@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Scalar\Symfony\Tests\Functional;
 
+use Psr\Log\NullLogger;
 use Scalar\Symfony\ScalarSymfonyBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\SecurityBundle\SecurityBundle;
@@ -53,6 +54,10 @@ final class TestKernel extends Kernel
         $withRealSecurity = $this->withRealSecurity;
 
         $loader->load(static function (ContainerBuilder $container) use ($scalarConfig, $authorizationCheckerAllows, $withRealSecurity): void {
+            // Expected HTTP errors must not write to stderr: Infection treats
+            // any stderr output from its initial PHPUnit run as a failure.
+            $container->register('logger', NullLogger::class);
+
             $container->loadFromExtension('framework', [
                 'test' => true,
                 'secret' => 'test-secret',

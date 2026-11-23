@@ -37,7 +37,15 @@ final class DocumentTest extends TestCase
     public function testMissingFileDoesNotSilentlyFallBack(): void
     {
         $this->expectException(MissingOpenApiDocument::class);
+        $this->expectExceptionMessage('The OpenAPI document is not a readable local file: '.__DIR__.'/missing.json');
         Document::resolve(['file' => __DIR__.'/missing.json', 'url' => '/ignored']);
+    }
+
+    public function testDirectoryIsNotAnOpenApiDocument(): void
+    {
+        $this->expectException(MissingOpenApiDocument::class);
+        $this->expectExceptionMessage('The OpenAPI document is not a readable local file: '.__DIR__);
+        Document::resolve(['file' => __DIR__, 'url' => '/ignored']);
     }
 
     public function testEmptyFileIsRejected(): void
@@ -45,6 +53,7 @@ final class DocumentTest extends TestCase
         $file = tempnam(sys_get_temp_dir(), 'scalar-empty-');
         try {
             $this->expectException(MissingOpenApiDocument::class);
+            $this->expectExceptionMessage('The OpenAPI document could not be read or is empty: '.$file);
             Document::resolve(['file' => $file]);
         } finally {
             unlink($file);
