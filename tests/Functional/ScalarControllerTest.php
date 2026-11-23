@@ -400,6 +400,19 @@ final class ScalarControllerTest extends TestCase
         self::assertSame($payload, $this->extractConfiguration($html)['content']);
     }
 
+    public function testInlineDocumentEscapesHtmlSensitiveCharacters(): void
+    {
+        $payload = '<tag attribute="value">Tom\'s & Jerry</tag>';
+        $client = $this->createClient(['url' => null, 'content' => $payload]);
+        $client->request('GET', '/scalar');
+        $html = $client->getResponse()->getContent();
+
+        foreach (['\\u003C', '\\u003E', '\\u0022', '\\u0027', '\\u0026'] as $escapedCharacter) {
+            self::assertStringContainsString($escapedCharacter, $html);
+        }
+        self::assertSame($payload, $this->extractConfiguration($html)['content']);
+    }
+
     public function testDocumentUrlMustBeAString(): void
     {
         $this->expectException(InvalidConfigurationException::class);

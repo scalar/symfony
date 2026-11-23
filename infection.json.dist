@@ -1,0 +1,17 @@
+{
+    "$schema": "https://raw.githubusercontent.com/infection/infection/0.35.12/resources/schema.json",
+    "source": {
+        "directories": ["src"]
+    },
+    "timeout": 10,
+    "minMsi": 97,
+    "minCoveredMsi": 97,
+    "timeoutsAsEscaped": true,
+    "logs": {
+        "text": "var/infection/infection.log",
+        "summaryJson": "var/infection/summary.json"
+    },
+    "mutators": {
+        "@default": true
+    }
+}

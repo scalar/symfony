@@ -1,0 +1,57 @@
+name: Fix PHP code style issues
+
+on:
+  push:
+    branches: ['**']
+    paths:
+      - '**.php'
+      - 'composer.json'
+      - '.github/workflows/fix-php-code-style-issues.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  php-code-styling:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        # v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.ref_name }}
+      - name: Setup PHP
+        # v2.40.0
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
+        with:
+          php-version: '8.2'
+          coverage: none
+      - name: Install dependencies
+        run: composer update --prefer-dist --no-interaction --no-progress
+      - name: Fix PHP code style issues
+        run: composer format
+      - name: Commit PHP code style fixes
+        id: formatting
+        # v7
+        uses: stefanzweifel/git-auto-commit-action@d0b01107b5db882071f96de5dd4b54961ea93f4c
+        with:
+          branch: ${{ github.ref_name }}
+          commit_message: Fix styling
+          file_pattern: '*.php'
+      - name: Check the formatting commit
+        if: steps.formatting.outputs.changes_detected == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORMAT_BRANCH: ${{ github.ref_name }}
+        # GITHUB_TOKEN pushes do not trigger push workflows. Explicit dispatches
+        # ensure that the new commit receives the same checks as the original.
+        run: |
+          gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref "$FORMAT_BRANCH"
+          gh workflow run check-workflows.yml --repo "$GITHUB_REPOSITORY" --ref "$FORMAT_BRANCH"
+          gh workflow run code-quality.yml --repo "$GITHUB_REPOSITORY" --ref "$FORMAT_BRANCH"
