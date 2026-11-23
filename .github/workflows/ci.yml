@@ -49,11 +49,11 @@ jobs:
             os: windows-latest
     steps:
       # v7.0.1
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/checkout@v7.0.1
 
       - name: Setup PHP
         # v2.40.0
-        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
+        uses: shivammathur/setup-php@2.40.0
         with:
           php-version: ${{ matrix.php }}
           coverage: none
@@ -61,7 +61,7 @@ jobs:
 
       - name: Cache Composer packages
         # v6.1.0
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.composer/cache/files
           key: composer-${{ runner.os }}-${{ matrix.php }}-${{ matrix.symfony }}-${{ matrix.deps || 'latest' }}-${{ hashFiles('composer.json', 'composer.lock') }}
@@ -125,8 +125,8 @@ jobs:
           - php: '8.4'
             symfony: '^8.1'
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
+      - uses: actions/checkout@v7.0.1
+      - uses: shivammathur/setup-php@2.40.0
         with:
           php-version: ${{ matrix.php }}
           coverage: none
@@ -138,8 +138,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
+      - uses: actions/checkout@v7.0.1
+      - uses: shivammathur/setup-php@2.40.0
         with:
           php-version: '8.4'
           coverage: none
