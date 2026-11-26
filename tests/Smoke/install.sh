@@ -40,9 +40,18 @@ if (1 !== preg_match("/Scalar\.createApiReference\('#scalar-api-reference', (\{.
     throw new RuntimeException('Fresh Flex installation did not render the Scalar configuration.');
 }
 $configuration = json_decode($matches[1], true, 512, JSON_THROW_ON_ERROR);
-if (true !== ($configuration['darkMode'] ?? null)
-    || 'My API' !== ($configuration['metaData']['title'] ?? null)
-    || ['/plugins/reference.mjs'] !== ($configuration['pluginUrls'] ?? null)
+$expected = Symfony\Component\Yaml\Yaml::parseFile('config/packages/scalar_symfony.yaml')['scalar_symfony']['configuration'] ?? [];
+$darkMode = $expected['darkMode'] ?? null;
+$title = $expected['metaData']['title'] ?? null;
+$pluginUrls = $expected['pluginUrls'] ?? null;
+if (!is_bool($darkMode) || !is_string($title) || !is_array($pluginUrls) || !array_is_list($pluginUrls)
+    || $pluginUrls !== array_filter($pluginUrls, 'is_string')
+) {
+    throw new RuntimeException('Generated Symfony configuration examples must include a boolean, a metadata title, and a list of plugin URLs.');
+}
+if ($darkMode !== ($configuration['darkMode'] ?? null)
+    || $title !== ($configuration['metaData']['title'] ?? null)
+    || $pluginUrls !== ($configuration['pluginUrls'] ?? null)
 ) {
     throw new RuntimeException('Fresh Flex installation did not render the uncommented YAML examples.');
 }
