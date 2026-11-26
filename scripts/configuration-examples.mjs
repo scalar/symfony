@@ -21,6 +21,7 @@ export const examples = {
     showExtensions: ['x-scopes'],
     slug: 'my-api',
     title: 'My API',
+    urlRouting: false,
 };
 
 export const symfonyNotes = {
