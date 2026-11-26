@@ -9,7 +9,9 @@ Render an interactive Scalar API reference from your OpenAPI document.
 
 ## Documentation
 
-[Read the documentation here](https://scalar.com/products/api-references/integrations/symfony) and browse the [generated YAML configuration reference](docs/configuration.yaml).
+[Read the integration guide](https://scalar.com/products/api-references/integrations/symfony) or copy the [YAML example](docs/configuration.yaml) to `config/packages/scalar_symfony.yaml`. Set your document URL and uncomment the options you want to use.
+
+See the [Scalar configuration reference](https://github.com/scalar/scalar/blob/main/documentation/configuration.md) for all option types and values.
 
 ## Changelog
 

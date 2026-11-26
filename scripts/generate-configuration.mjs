@@ -1,64 +1,82 @@
 import { writeFileSync } from 'node:fs';
 import { apiReferenceConfigurationSchema } from '@scalar/schemas/api-reference';
+import { stringify } from 'yaml';
+import { descriptions, examples } from './configuration-examples.mjs';
 
-// A missing result means the schema branch cannot be passed to the browser as JSON.
-function describe(schema, resolving = new Set()) {
+const documentKeys = new Set(['_integration', 'content', 'default', 'file', 'sources', 'spec', 'url']);
+const activeConfiguration = { theme: 'symfony' };
+// Quote date-like strings and other ambiguous scalars for Symfony's YAML parser.
+const yamlStyle = { indent: 4, lineWidth: 0, schema: 'yaml-1.1' };
+
+// Undefined means this branch has no YAML example that can be passed as JSON.
+function schemaExample(schema, resolving = new Set()) {
     switch (schema.type) {
         case 'optional':
         case 'evaluate':
-            return describe(schema.schema, resolving);
-        case 'union': {
-            const choices = schema.schemas.map((part) => describe(part, resolving)).filter(Boolean);
-            if (choices.length === 0) {
-                return;
-            }
-
-            return {
-                type: [...new Set(choices.map((choice) => choice.type))].join(' | '),
-                example: choices.find((choice) => choice.example !== undefined)?.example,
-            };
-        }
-        case 'array': {
-            const items = describe(schema.items, resolving);
-            if (items) {
-                return { type: `array<${items.type}>`, example: [] };
+            return schemaExample(schema.schema, resolving);
+        case 'union':
+            for (const part of schema.schemas) {
+                const example = schemaExample(part, resolving);
+                if (example !== undefined) {
+                    return example;
+                }
             }
             return;
-        }
+        case 'array':
+            if (schemaExample(schema.items, resolving) !== undefined) {
+                return [];
+            }
+            return;
         case 'record': {
-            const values = describe(schema.value, resolving);
-            if (values) {
-                return { type: `object<${values.type}>` };
+            const value = schemaExample(schema.value, resolving);
+            if (value !== undefined) {
+                const key = schema.key.type === 'number' ? '1' : 'key';
+                return { [key]: value };
             }
             return;
         }
-        case 'object':
-            return { type: 'object' };
-        case 'intersection':
-            if (schema.schemas.every((part) => describe(part, resolving))) {
-                return { type: 'object' };
+        case 'object': {
+            const entries = [];
+            const optionalEntries = [];
+            for (const [key, field] of Object.entries(schema.properties)) {
+                const example = schemaExample(field, resolving);
+                if (field.type === 'optional') {
+                    if (example !== undefined) {
+                        optionalEntries.push([key, example]);
+                    }
+                } else if (example === undefined) {
+                    return;
+                } else {
+                    entries.push([key, example]);
+                }
+            }
+            return Object.fromEntries(entries.length ? entries : optionalEntries.slice(0, 1));
+        }
+        case 'intersection': {
+            const parts = schema.schemas.map((part) => schemaExample(part, resolving));
+            if (parts.every((part) => part !== null && typeof part === 'object' && !Array.isArray(part))) {
+                return Object.assign({}, ...parts);
             }
             return;
+        }
         case 'lazy':
-            // A recursive branch can still accept a finite JSON value.
-            if (resolving.has(schema.schema)) {
-                return { type: 'JSON value' };
+            // Stop walking recursive types once the same factory appears again.
+            if (!resolving.has(schema.schema)) {
+                return schemaExample(schema.schema(), new Set(resolving).add(schema.schema));
             }
-            return describe(schema.schema(), new Set(resolving).add(schema.schema));
+            return null;
         case 'literal':
-            if (typeof schema.value !== 'bigint') {
-                return { type: JSON.stringify(schema.value), example: schema.value };
-            }
-            return;
-        case 'nullable':
-            return { type: 'null' };
-        case 'number':
-        case 'string':
+            return typeof schema.value === 'bigint' ? undefined : schema.value;
         case 'boolean':
-            return { type: schema.type, example: schema.default };
+            return !(schema.default ?? false);
+        case 'number':
+            return schema.default ?? 0;
+        case 'string':
+            return schema.default ?? '';
+        case 'nullable':
         case 'any':
         case 'unknown':
-            return { type: 'JSON value' };
+            return null;
         case 'function':
         case 'notDefined':
             return;
@@ -77,37 +95,51 @@ function properties(schema) {
     throw new Error(`Expected a Scalar configuration object, got ${schema.type}`);
 }
 
-const documentKeys = new Set(['_integration', 'content', 'default', 'file', 'sources', 'spec', 'url']);
+function wrapDescription(text) {
+    const words = text.replace(/`([^`]+)`/g, "'$1'").trim().split(/\s+/);
+    const lines = [];
+    let line = '';
+    for (const word of words) {
+        if (line.length && line.length + word.length + 1 > 84) {
+            lines.push(line);
+            line = '';
+        }
+        line = line ? `${line} ${word}` : word;
+    }
+    return [...lines, line].filter(Boolean);
+}
 
-const lines = [
-    '# Generated by npm run generate:configuration.',
-    '# Uncomment the options you want to set under scalar_symfony.configuration.',
-    '# Set the document URL, content, file, or sources at the top level.',
-    'scalar_symfony:',
-    '    url: /openapi.yaml',
-    '    # configuration:',
-];
+const header = stringify(
+    { scalar_symfony: { url: '/openapi.yaml', configuration: activeConfiguration } },
+    yamlStyle,
+).trimEnd();
+const lines = ['# config/packages/scalar_symfony.yaml', header];
+
 const optionSchemas = properties(apiReferenceConfigurationSchema);
 for (const key of Object.keys(optionSchemas).sort()) {
-    if (documentKeys.has(key)) {
+    if (documentKeys.has(key) || Object.hasOwn(activeConfiguration, key)) {
         continue;
     }
 
     const schema = optionSchemas[key];
-    const details = describe(schema);
-    if (!details) {
+    const schemaDescription = schema.typeComment ?? schema.schema?.typeComment;
+    if (schemaDescription?.includes('@deprecated')) {
         continue;
     }
 
-    const description = schema.typeComment ?? schema.schema?.typeComment;
-    lines.push('', `    #     # ${key} (${details.type})`);
+    const example = schemaExample(schema);
+    if (example === undefined) {
+        continue;
+    }
+
+    const description = Object.hasOwn(descriptions, key) ? descriptions[key] : schemaDescription;
+    const value = Object.hasOwn(examples, key) ? examples[key] : example;
+    const yamlLines = stringify({ [key]: value }, yamlStyle).replace(/\n$/, '').split('\n');
+    lines.push('');
     if (description) {
-        lines.push(`    #     # ${description.replace(/\s+/g, ' ').trim()}`);
+        lines.push(...wrapDescription(description).map((line) => `        # ${line}`));
     }
-    if (details.example !== undefined) {
-        const yamlKey = /^[A-Za-z_]\w*$/.test(key) ? key : JSON.stringify(key);
-        lines.push(`    #     ${yamlKey}: ${JSON.stringify(details.example)}`);
-    }
+    lines.push(...yamlLines.map((line) => `        # ${line}`));
 }
 
 writeFileSync(new URL('../docs/configuration.yaml', import.meta.url), lines.join('\n') + '\n');
