@@ -308,7 +308,13 @@ final class ScalarControllerTest extends TestCase
     public function testArbitraryConfigurationAndLegacyPrecedence(): void
     {
         $client = $this->createClient([
-            'configuration' => ['darkMode' => true, 'layout' => 'modern', 'metaData' => ['description' => 'Docs']],
+            'configuration' => [
+                'darkMode' => true,
+                'layout' => 'modern',
+                'metaData' => ['description' => 'Docs'],
+                'expandAllParameters' => false,
+                'pluginUrls' => ['/plugins/example.mjs'],
+            ],
             'scalar_options' => ['layout' => 'classic'],
         ]);
         $client->request('GET', '/scalar');
@@ -316,6 +322,8 @@ final class ScalarControllerTest extends TestCase
         self::assertTrue($configuration['darkMode']);
         self::assertSame('classic', $configuration['layout']);
         self::assertSame(['title' => 'API Reference', 'description' => 'Docs'], $configuration['metaData']);
+        self::assertFalse($configuration['expandAllParameters']);
+        self::assertSame(['/plugins/example.mjs'], $configuration['pluginUrls']);
     }
 
     public function testInlineContentDoesNotRequireAUrl(): void

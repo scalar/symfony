@@ -12,3 +12,6 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # The configuration workflow updates this dependency and its generated output together.
+      - dependency-name: "@scalar/schemas"

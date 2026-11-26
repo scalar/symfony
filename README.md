@@ -9,13 +9,15 @@ Render an interactive Scalar API reference from your OpenAPI document.
 
 ## Documentation
 
-[Read the documentation here](https://scalar.com/products/api-references/integrations/symfony)
+[Read the documentation here](https://scalar.com/products/api-references/integrations/symfony) and browse the [generated YAML configuration reference](docs/configuration.yaml).
 
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for a list of changes.
 
 ## Development checks
+
+Run `npm ci` and `npm run generate:configuration` to regenerate the YAML reference from the locked `@scalar/schemas` package. The weekly Scalar configuration workflow opens a PR when a schema update changes the reference. Approve the workflows on the generated PR to run its checks.
 
 Run `composer test`, `composer analyse`, and `composer lint` before opening a pull request. Use `composer format` to apply PHP-CS-Fixer rules.
 
