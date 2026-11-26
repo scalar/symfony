@@ -4,18 +4,18 @@ scalar_symfony:
     configuration:
         theme: symfony
 
-        # Configure the Agent Scalar chat.
+        # Agent Scalar configuration
         # agent:
         #     disabled: true
 
-        # Choose a security scheme from your OpenAPI document.
+        # Prefill authentication
         # authentication:
         #     preferredSecurityScheme: bearerAuth
 
-        # Resolve relative server URLs against this base URL.
+        # Base URL for the API server
         # baseServerURL: https://api.example.com
 
-        # Add custom styles to the API reference.
+        # Custom CSS to be added to the page
         # customCss: ".scalar-app { --scalar-color-accent: #5b48d6; }"
 
         # Whether dark mode is on or off initially (light mode)
@@ -37,14 +37,16 @@ scalar_symfony:
         # Initial view for the request body editor with structured (JSON/YAML) bodies
         # defaultRequestBodyView: form
 
-        # Download format. Use 'none' to hide the download button.
-        # documentDownloadType: none
+        # Sets the file type of the document to download, set to 'none' to hide the download
+        # button
+        # documentDownloadType: both
 
         # Whether to expand all models by default. Warning: this can cause performance issues
         # on big documents
         # expandAllModelSections: true
 
-        # Show parameter details by default. Set to false to start collapsed.
+        # Whether to show parameter details by default. Set to false to collapse each
+        # parameter.
         # expandAllParameters: false
 
         # Whether to expand all responses by default. Warning: this can cause performance
@@ -68,10 +70,11 @@ scalar_symfony:
         # featuredClients:
         #     - node/fetch
 
-        # Force the reference to use 'dark' or 'light' mode.
+        # forceDarkModeState makes it always this state no matter what
         # forceDarkModeState: dark
 
-        # Hide selected HTTP clients. Use [] to show all clients.
+        # List of httpsnippet clients to hide from the clients menu. By default hides Unirest,
+        # pass '[]' to show all clients
         # hiddenClients:
         #     - php/guzzle
 
@@ -116,7 +119,8 @@ scalar_symfony:
         #     name: My API
         #     url: https://mcp.example.com
 
-        # Set page metadata, including the browser tab title.
+        # If used, passed data will be added to the HTML header. @see
+        # https://unhead.unjs.io/usage/composables/use-seo-meta
         # metaData:
         #     title: My API
 
@@ -134,26 +138,34 @@ scalar_symfony:
         # search
         # operationTitleSource: summary
 
-        # Sort sidebar operations by 'alpha' or 'method'.
+        # Function to sort operations
         # operationsSorter: alpha
 
         # Sort the schema properties by required ones first
         # orderRequiredPropertiesFirst: false
 
-        # Use 'alpha' to sort schema properties or 'preserve' for document order.
+        # Order the schema properties by
         # orderSchemaPropertiesBy: alpha
 
-        # Use paths instead of hashes. Your application must route nested URLs to Scalar.
+        # Route using paths instead of hashes, your server MUST support this. @experimental
+        # The bundle route only matches the base path. Route nested paths to the same Symfony
+        # controller.
         # pathRouting:
         #     basePath: /scalar
 
         # Whether to persist auth to local storage
         # persistAuth: true
 
-        # Remember the selected code sample client in the browser.
+        # Whether to save and restore the selected code sample client using local storage.
+        # @default true
         # persistSelectedClient: false
 
-        # Load plugins from browser-accessible JavaScript modules.
+        # URLs of ESM modules that provide additional plugins for the API reference. Each
+        # module is loaded with a dynamic 'import()' before the API reference mounts, and its
+        # default export is registered as a plugin. Unlike 'plugins', this option is
+        # JSON-serializable, so integrations that pass their configuration as JSON can load
+        # plugins without replacing the whole bundle. Only supported by the standalone browser
+        # build ('Scalar.createApiReference').
         # pluginUrls:
         #     - /plugins/reference.mjs
 
@@ -198,7 +210,7 @@ scalar_symfony:
         # be used. With multiple 'sources', set this per source.
         # slug: my-api
 
-        # Sort sidebar tags alphabetically.
+        # Function to sort tags
         # tagsSorter: alpha
 
         # Enables / disables telemetry

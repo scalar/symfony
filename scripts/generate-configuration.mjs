@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
-import { apiReferenceConfigurationSchema } from '@scalar/schemas/api-reference';
+import { apiReferenceConfigurationSchema, apiReferenceConfigurationWithSourceSchema } from '@scalar/schemas/api-reference';
 import { stringify } from 'yaml';
-import { descriptions, examples } from './configuration-examples.mjs';
+import { examples, symfonyNotes } from './configuration-examples.mjs';
 
 const documentKeys = new Set(['_integration', 'content', 'default', 'file', 'sources', 'spec', 'url']);
 const activeConfiguration = { theme: 'symfony' };
@@ -95,6 +95,19 @@ function properties(schema) {
     throw new Error(`Expected a Scalar configuration object, got ${schema.type}`);
 }
 
+// Scalar may fill in omitted object fields. Every field we show must survive unchanged.
+function preservesExample(actual, example) {
+    if (Array.isArray(example)) {
+        return Array.isArray(actual) && actual.length === example.length
+            && example.every((item, index) => preservesExample(actual[index], item));
+    }
+    if (example !== null && typeof example === 'object') {
+        return actual !== null && typeof actual === 'object' && !Array.isArray(actual)
+            && Object.entries(example).every(([key, value]) => Object.hasOwn(actual, key) && preservesExample(actual[key], value));
+    }
+    return Object.is(actual, example);
+}
+
 function wrapDescription(text) {
     const words = text.replace(/`([^`]+)`/g, "'$1'").trim().split(/\s+/);
     const lines = [];
@@ -132,12 +145,19 @@ for (const key of Object.keys(optionSchemas).sort()) {
         continue;
     }
 
-    const description = Object.hasOwn(descriptions, key) ? descriptions[key] : schemaDescription;
-    const value = Object.hasOwn(examples, key) ? examples[key] : example;
+    const hasOverride = Object.hasOwn(examples, key);
+    const value = hasOverride ? examples[key] : example;
+    if (hasOverride && !preservesExample(apiReferenceConfigurationWithSourceSchema({ [key]: value })[key], value)) {
+        throw new Error(`Scalar's runtime schema changes the example override for '${key}'. Update scripts/configuration-examples.mjs.`);
+    }
+
     const yamlLines = stringify({ [key]: value }, yamlStyle).replace(/\n$/, '').split('\n');
     lines.push('');
-    if (description) {
-        lines.push(...wrapDescription(description).map((line) => `        # ${line}`));
+    if (schemaDescription) {
+        lines.push(...wrapDescription(schemaDescription).map((line) => `        # ${line}`));
+    }
+    if (Object.hasOwn(symfonyNotes, key)) {
+        lines.push(...wrapDescription(symfonyNotes[key]).map((line) => `        # ${line}`));
     }
     lines.push(...yamlLines.map((line) => `        # ${line}`));
 }

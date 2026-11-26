@@ -5,7 +5,6 @@ export const examples = {
     baseServerURL: 'https://api.example.com',
     customCss: '.scalar-app { --scalar-color-accent: #5b48d6; }',
     defaultHttpClient: { targetKey: 'shell', clientKey: 'curl' },
-    documentDownloadType: 'none',
     externalUrls: { proxyUrl: 'https://proxy.example.com' },
     favicon: '/favicon.svg',
     featuredClients: ['node/fetch'],
@@ -24,20 +23,6 @@ export const examples = {
     title: 'My API',
 };
 
-export const descriptions = {
-    agent: 'Configure the Agent Scalar chat.',
-    authentication: 'Choose a security scheme from your OpenAPI document.',
-    baseServerURL: 'Resolve relative server URLs against this base URL.',
-    customCss: 'Add custom styles to the API reference.',
-    documentDownloadType: "Download format. Use 'none' to hide the download button.",
-    expandAllParameters: 'Show parameter details by default. Set to false to start collapsed.',
-    forceDarkModeState: "Force the reference to use 'dark' or 'light' mode.",
-    hiddenClients: 'Hide selected HTTP clients. Use [] to show all clients.',
-    metaData: 'Set page metadata, including the browser tab title.',
-    operationsSorter: "Sort sidebar operations by 'alpha' or 'method'.",
-    orderSchemaPropertiesBy: "Use 'alpha' to sort schema properties or 'preserve' for document order.",
-    pathRouting: 'Use paths instead of hashes. Your application must route nested URLs to Scalar.',
-    persistSelectedClient: 'Remember the selected code sample client in the browser.',
-    pluginUrls: 'Load plugins from browser-accessible JavaScript modules.',
-    tagsSorter: 'Sort sidebar tags alphabetically.',
+export const symfonyNotes = {
+    pathRouting: 'The bundle route only matches the base path. Route nested paths to the same Symfony controller.',
 };
