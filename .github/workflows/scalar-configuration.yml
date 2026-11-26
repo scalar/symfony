@@ -67,7 +67,6 @@ jobs:
           path: ${{ runner.temp }}/scalar-configuration-update
       - name: Pin the pull request base
         # Give create-pull-request the named base at the generation commit.
-        # GitHub can then surface any conflicts with newer changes on main.
         run: |
           git update-ref refs/remotes/origin/main HEAD
           git switch --create main --track origin/main
@@ -76,9 +75,8 @@ jobs:
         run: >-
           git apply --include=package.json --include=package-lock.json --include=docs/configuration.yaml
           "$RUNNER_TEMP/scalar-configuration-update/scalar-configuration.patch"
-      - name: Check current main before cleanup
-        id: cleanup
-        if: needs.generate.outputs.changed != 'true'
+      - name: Check current main before publishing
+        id: verify-base
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -86,11 +84,11 @@ jobs:
           if [ "$main_sha" = "$(git rev-parse HEAD)" ]; then
             echo "current=true" >> "$GITHUB_OUTPUT"
           else
-            echo "::notice::Skipping Scalar configuration PR cleanup because main advanced after generation."
+            echo "::notice::Skipping Scalar configuration PR update because main advanced after generation."
           fi
       # A clean checkout lets the action close an obsolete update pull request.
       - uses: peter-evans/create-pull-request@v8.1.3
-        if: needs.generate.outputs.changed == 'true' || steps.cleanup.outputs.current == 'true'
+        if: steps.verify-base.outputs.current == 'true'
         with:
           base: main
           branch: automation/scalar-configuration
