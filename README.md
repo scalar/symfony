@@ -9,13 +9,17 @@ Render an interactive Scalar API reference from your OpenAPI document.
 
 ## Documentation
 
-[Read the documentation here](https://scalar.com/products/api-references/integrations/symfony)
+[Read the integration guide](https://scalar.com/products/api-references/integrations/symfony) or copy the [YAML example](docs/configuration.yaml) to `config/packages/scalar_symfony.yaml`. Set your document URL and uncomment the options you want to use.
+
+See the [Scalar configuration reference](https://github.com/scalar/scalar/blob/main/documentation/configuration.md) for all option types and values.
 
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for a list of changes.
 
 ## Development checks
+
+With Node.js 24, run `npm ci` and `npm run generate:configuration` to regenerate the YAML reference from the locked `@scalar/schemas` package. The weekly Scalar configuration workflow opens or updates a PR when a schema update changes the reference. It closes the update PR when the latest schema generates the YAML already on `main`. Approve the workflows on the generated PR to run its checks.
 
 Run `composer test`, `composer analyse`, and `composer lint` before opening a pull request. Use `composer format` to apply PHP-CS-Fixer rules.
 

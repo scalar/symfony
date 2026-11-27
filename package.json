@@ -1,6 +1,13 @@
 {
   "name": "scalar-symfony-browser-tests",
   "private": true,
-  "scripts": {"test:browser": "playwright test"},
-  "devDependencies": {"@playwright/test": "1.65.1"}
+  "scripts": {
+    "test:browser": "playwright test",
+    "generate:configuration": "node scripts/generate-configuration.mts"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@scalar/schemas": "0.20.1",
+    "yaml": "2.9.1"
+  }
 }
