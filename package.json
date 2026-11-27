@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "test:browser": "playwright test",
-    "generate:configuration": "node scripts/generate-configuration.mjs"
+    "generate:configuration": "node scripts/generate-configuration.mts"
   },
   "devDependencies": {
     "@playwright/test": "1.65.1",

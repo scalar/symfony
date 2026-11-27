@@ -1,7 +1,8 @@
 import { writeFileSync } from 'node:fs';
 import { apiReferenceConfigurationSchema, apiReferenceConfigurationWithSourceSchema } from '@scalar/schemas/api-reference';
+import type { Schema } from '@scalar/validation';
 import { stringify } from 'yaml';
-import { examples, symfonyNotes } from './configuration-examples.mjs';
+import { examples, symfonyNotes } from './configuration-examples.mts';
 
 const documentKeys = new Set(['_integration', 'content', 'default', 'file', 'sources', 'spec', 'url']);
 const activeConfiguration = { theme: 'symfony' };
@@ -9,8 +10,9 @@ const activeConfiguration = { theme: 'symfony' };
 const yamlStyle = { indent: 4, lineWidth: 0, schema: 'yaml-1.1' };
 
 // Undefined means this branch has no YAML example that can be passed as JSON.
-function schemaExample(schema, resolving = new Set()) {
-    switch (schema.type) {
+function schemaExample(schema: Schema, resolving = new Set<() => Schema>()): unknown {
+    const type = schema.type;
+    switch (type) {
         case 'optional':
         case 'evaluate':
             return schemaExample(schema.schema, resolving);
@@ -36,8 +38,8 @@ function schemaExample(schema, resolving = new Set()) {
             return;
         }
         case 'object': {
-            const entries = [];
-            const optionalEntries = [];
+            const entries: [string, unknown][] = [];
+            const optionalEntries: [string, unknown][] = [];
             for (const [key, field] of Object.entries(schema.properties)) {
                 const example = schemaExample(field, resolving);
                 if (field.type === 'optional') {
@@ -81,11 +83,11 @@ function schemaExample(schema, resolving = new Set()) {
         case 'notDefined':
             return;
         default:
-            throw new Error(`Unsupported Scalar schema type: ${schema.type}`);
+            throw new Error(`Unsupported Scalar schema type: ${type}`);
     }
 }
 
-function properties(schema) {
+function properties(schema: Schema): Record<string, Schema> {
     if (schema.type === 'intersection') {
         return Object.assign({}, ...schema.schemas.map(properties));
     }
@@ -96,19 +98,22 @@ function properties(schema) {
 }
 
 // Scalar may fill in omitted object fields. Every field we show must survive unchanged.
-function preservesExample(actual, example) {
+function preservesExample(actual: unknown, example: unknown): boolean {
     if (Array.isArray(example)) {
         return Array.isArray(actual) && actual.length === example.length
             && example.every((item, index) => preservesExample(actual[index], item));
     }
     if (example !== null && typeof example === 'object') {
-        return actual !== null && typeof actual === 'object' && !Array.isArray(actual)
-            && Object.entries(example).every(([key, value]) => Object.hasOwn(actual, key) && preservesExample(actual[key], value));
+        if (actual === null || typeof actual !== 'object' || Array.isArray(actual)) {
+            return false;
+        }
+        const fields = actual as Record<string, unknown>;
+        return Object.entries(example).every(([key, value]) => Object.hasOwn(fields, key) && preservesExample(fields[key], value));
     }
     return Object.is(actual, example);
 }
 
-function wrapDescription(text) {
+function wrapDescription(text: string): string[] {
     const words = text.replace(/`([^`]+)`/g, "'$1'").trim().split(/\s+/);
     const lines = [];
     let line = '';
@@ -135,7 +140,8 @@ for (const key of Object.keys(optionSchemas).sort()) {
     }
 
     const schema = optionSchemas[key];
-    const schemaDescription = schema.typeComment ?? schema.schema?.typeComment;
+    const typeComment = 'typeComment' in schema ? schema.typeComment : undefined;
+    const schemaDescription = typeComment ?? ('schema' in schema ? schema.schema?.typeComment : undefined);
     if (schemaDescription?.includes('@deprecated')) {
         continue;
     }
@@ -147,8 +153,11 @@ for (const key of Object.keys(optionSchemas).sort()) {
 
     const hasOverride = Object.hasOwn(examples, key);
     const value = hasOverride ? examples[key] : example;
-    if (hasOverride && !preservesExample(apiReferenceConfigurationWithSourceSchema({ [key]: value })[key], value)) {
-        throw new Error(`Scalar's runtime schema changes the example override for '${key}'. Update scripts/configuration-examples.mjs.`);
+    if (hasOverride) {
+        const parsed: Record<string, unknown> = apiReferenceConfigurationWithSourceSchema({ [key]: value });
+        if (!preservesExample(parsed[key], value)) {
+            throw new Error(`Scalar's runtime schema changes the example override for '${key}'. Update scripts/configuration-examples.mts.`);
+        }
     }
 
     const yamlLines = stringify({ [key]: value }, yamlStyle).replace(/\n$/, '').split('\n');

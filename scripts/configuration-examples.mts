@@ -1,5 +1,5 @@
 // Use realistic examples for settings that depend on the application.
-export const examples = {
+export const examples: Record<string, unknown> = {
     agent: { disabled: true },
     authentication: { preferredSecurityScheme: 'bearerAuth' },
     baseServerURL: 'https://api.example.com',
@@ -24,6 +24,6 @@ export const examples = {
     urlRouting: false,
 };
 
-export const symfonyNotes = {
+export const symfonyNotes: Record<string, string> = {
     pathRouting: 'The bundle route only matches the base path. Route nested paths to the same Symfony controller.',
 };
